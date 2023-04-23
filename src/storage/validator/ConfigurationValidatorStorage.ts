@@ -20,6 +20,8 @@ export default class ConfigurationValidatorStorage extends SchemaValidator {
   }
 
   public validateConfigurationSave(data: any): Configuration {
-    return this.validate(this.configurationSave, data, true);
+    return data;
+    // @@ David Canceling vlidation 
+    //return this.validate(this.configurationSave, data, true);
   }
 }

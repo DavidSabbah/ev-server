@@ -68,7 +68,12 @@ export default class MongoDBStorage {
       });
     }
     // Watch
-    const changeStream = dbCollection.watch([], { fullDocument: 'updateLookup' });
+    let changeStream = null;
+    if (this.dbConfig.useStreams)
+    {
+      changeStream = dbCollection.watch([], { fullDocument: 'updateLookup' });
+    }
+    
     const message = `Database collection '${tenant.id}.${collectionName}' is being watched`;
     Utils.isDevelopmentEnv() && Logging.logConsoleDebug(message);
     await Logging.logDebug({
@@ -77,13 +82,17 @@ export default class MongoDBStorage {
       message, module: MODULE_NAME, method: 'watchDatabaseCollection'
     });
     // Trigger callbacks
-    changeStream.on('change', (changeStreamDocument: ChangeStreamDocument) => {
-      const documentID = changeStreamDocument['documentKey'] ? changeStreamDocument['documentKey']['_id'] : null;
-      const documentChange = changeStreamDocument.operationType;
-      const fullDocument = changeStreamDocument['fullDocument'];
-      // Callback
-      callback(documentID, documentChange as DatabaseDocumentChange, fullDocument);
-    });
+    if (this.dbConfig.useStreams)
+    {
+      changeStream.on('change', (changeStreamDocument: ChangeStreamDocument) => {
+        const documentID = changeStreamDocument['documentKey'] ? changeStreamDocument['documentKey']['_id'] : null;
+        const documentChange = changeStreamDocument.operationType;
+        const fullDocument = changeStreamDocument['fullDocument'];
+        // Callback
+        callback(documentID, documentChange as DatabaseDocumentChange, fullDocument);
+      });
+    }
+    /**/
   }
 
   public async checkAndCreateTenantDatabase(tenantID: string): Promise<void> {
@@ -256,7 +265,7 @@ export default class MongoDBStorage {
     // Build EVSE URL
     let mongoUrl: string;
     // URI provided?
-    if (this.dbConfig.uri) {
+    if (this.dbConfig.host == null) {
       // Yes: use it
       mongoUrl = this.dbConfig.uri;
     // Build URI without replicaset

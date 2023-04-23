@@ -13,5 +13,6 @@ export default interface StorageConfiguration {
   monitorDBChange: boolean;
   debug: boolean;
   readPreference: string;
+  useStreams : boolean;
 }
 
