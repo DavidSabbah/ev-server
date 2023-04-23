@@ -85,7 +85,8 @@
     "implementation": "mongodb",
     "uri": "YourConnectionURI",
     "debug": false,
-    "poolSize": 10
+    "poolSize": 10,
+    "useStreams": false
   },
   "Notification": {
     "Email": {
